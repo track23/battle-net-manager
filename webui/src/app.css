@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-primary: #16a34a;
+  --color-primary-hover: #15803d;
+  --color-primary-light: #dcfce7;
+  --color-primary-dark: #166534;
+  --color-sidebar-bg: #f8fafc;
+  --color-sidebar-border: #e2e8f0;
+  --color-card-bg: #ffffff;
+  --color-card-border: #e5e7eb;
+  --color-page-bg: #f1f5f9;
+  --color-modal-overlay: rgba(0, 0, 0, 0.5);
+
+  --color-dark-sidebar-bg: #334155;
+  --color-dark-sidebar-border: #475569;
+  --color-dark-card-bg: #334155;
+  --color-dark-card-border: #475569;
+  --color-dark-page-bg: #1e293b;
+  --color-dark-text: #f1f5f9;
+  --color-dark-text-secondary: #cbd5e1;
+}
+
+@layer utilities {
+  .drag-region {
+    -webkit-app-region: drag;
+  }
+  .no-drag {
+    -webkit-app-region: no-drag;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+body {
+  background-color: transparent !important;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+input, textarea, select {
+  user-select: auto;
+  -webkit-user-select: auto;
+}
+
+/* Dark mode */
+html.dark {
+  color-scheme: dark;
+  --color-primary: #4ade80;
+  --color-primary-hover: #22c55e;
+  --color-primary-light: #052e16;
+  --color-primary-dark: #86efac;
+}

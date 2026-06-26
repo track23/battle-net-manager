@@ -1,0 +1,15 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Tauri / Rust
+src-tauri/target/
+
+# Node
+webui/node_modules/
+webui/dist/
+webui/.env.local
+
+*.log
+*.tmp
