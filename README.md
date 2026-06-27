@@ -4,6 +4,8 @@
 
 > ⚠️目前仅支持战网国服。本软件由第三方独立开发，与暴雪娱乐（Blizzard Entertainment）及战网官方和网易无关，亦未获得其任何形式的授权或认可。
 
+站在巨人的肩膀上 — 此项目参考了 [KManager](https://github.com/kingkideng/KManager)
+
 ## 简介
 
 BattleNetManager 是一款轻量级的 Windows 桌面应用，帮助拥有多个**暴雪战网（国服）**账号的玩家快速切换账号。无需反复输入账号密码，一键即可在不同账号之间无缝切换。
@@ -21,10 +23,6 @@ BattleNetManager 是一款轻量级的 Windows 桌面应用，帮助拥有多个
 - **🪶 体积小巧** — 基于 Tauri 构建，安装包仅数 MB，不臃肿
 - **🔒 安全开源** — 代码完全开源，无后门、无遥测、无广告，欢迎审计
 - **💾 数据本地存储** — 所有账号信息和配置文件均保存在本地，不会上传到任何服务器
-
----
-
-站在巨人的肩膀上 — 此项目参考了 [KManager](https://github.com/kingkideng/KManager)
 
 ## 技术栈
 

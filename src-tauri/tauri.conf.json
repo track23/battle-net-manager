@@ -29,7 +29,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHJlamVjdGVkIGJ5IHVzZXI6IGlnbm9yZWQK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDhCRjUwOUVCNDJCMDlFMzMKUldRem5yQkM2d24xaTdyK00yRnFaUGNjOER4cmc5cFkrbGEvY2lMZkZHWkk4Ykh2MEVTcnFndGUK",
       "endpoints": [
         "https://github.com/track23/battle-net-manager/releases/latest/download/latest.json"
       ]

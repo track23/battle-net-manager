@@ -13,3 +13,7 @@ webui/.env.local
 
 *.log
 *.tmp
+
+# Tauri updater signing key (must stay secret)
+src-tauri/updater.key
+src-tauri/updater.key.pub
