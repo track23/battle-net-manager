@@ -7,7 +7,7 @@ import {
   For,
   type Component,
 } from 'solid-js'
-import type { Account, Group } from './types'
+import type { Account, Group, UpdateInfo } from './types'
 import { getBridge } from './bridge'
 import {
   EXPANDED_GROUPS_KEY,
@@ -19,6 +19,7 @@ import { Sidebar } from './components/Sidebar'
 import { Header } from './components/Header'
 import { AccountGrid } from './components/AccountGrid'
 import { AccountModal } from './components/AccountModal'
+import { UpdateModal } from './components/UpdateModal'
 
 const App: Component = () => {
   // ── Core data ──
@@ -42,6 +43,10 @@ const App: Component = () => {
   // ── Modal state ──
   const [modalOpen, setModalOpen] = createSignal(false)
   const [editingAccount, setEditingAccount] = createSignal<Account | null>(null)
+
+  // ── Update state ──
+  const [updateInfo, setUpdateInfo] = createSignal<UpdateInfo | null>(null)
+  const [updateModalOpen, setUpdateModalOpen] = createSignal(false)
 
   // ── Derived data ──
   const orderedGroups = createMemo(() => {
@@ -151,6 +156,9 @@ const App: Component = () => {
     }
 
     await loadData()
+
+    // Check for updates after data loads
+    checkForUpdate()
   })
 
   // ── Data loading ──
@@ -173,6 +181,30 @@ const App: Component = () => {
       console.error('Failed to load data:', e)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // ── Update checking ──
+  async function checkForUpdate() {
+    try {
+      const bridge = getBridge()
+      const update = await bridge.CheckUpdate()
+      if (update) {
+        setUpdateInfo(update)
+        setUpdateModalOpen(true)
+      }
+    } catch (e) {
+      console.error('Failed to check for update:', e)
+    }
+  }
+
+  async function installUpdate() {
+    try {
+      const bridge = getBridge()
+      await bridge.InstallUpdate()
+    } catch (e) {
+      console.error('Failed to install update:', e)
+      throw e
     }
   }
 
@@ -423,6 +455,15 @@ const App: Component = () => {
             onClose={closeModal}
             onSave={saveAccount}
             onLoginNew={loginNewAccount}
+          />
+        </Show>
+
+        {/* Update Modal */}
+        <Show when={updateModalOpen() && updateInfo()}>
+          <UpdateModal
+            updateInfo={updateInfo()!}
+            onClose={() => setUpdateModalOpen(false)}
+            onInstall={installUpdate}
           />
         </Show>
       </div>

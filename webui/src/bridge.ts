@@ -1,4 +1,4 @@
-import type { Account, Group } from './types'
+import type { Account, Group, UpdateInfo } from './types'
 import { toLocalISOString } from './lib/utils'
 
 // ─── Tauri Bridge ──────────────────────────────────────────────────────
@@ -117,6 +117,16 @@ class TauriBridge {
   async CloseApp(): Promise<void> {
     await ensureInvoke()
     await tauriInvoke!('close_app')
+  }
+
+  async CheckUpdate(): Promise<UpdateInfo | null> {
+    await ensureInvoke()
+    return tauriInvoke!('check_update')
+  }
+
+  async InstallUpdate(): Promise<void> {
+    await ensureInvoke()
+    await tauriInvoke!('install_update')
   }
 }
 
@@ -254,6 +264,15 @@ class MockBridge {
 
   async DragWindow(): Promise<void> {
     console.log('Mock: Dragging window')
+  }
+
+  async CheckUpdate(): Promise<UpdateInfo | null> {
+    console.log('Mock: Checking for updates')
+    return null
+  }
+
+  async InstallUpdate(): Promise<void> {
+    console.log('Mock: Installing update')
   }
 }
 

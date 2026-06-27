@@ -10,6 +10,7 @@ use battle_net_manager_lib::BattleNetCore;
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
             // Manage the core business logic
             app.manage(BattleNetCore::new());
@@ -84,6 +85,8 @@ fn main() {
             commands::minimize_app,
             commands::close_app,
             commands::show_window,
+            commands::check_update,
+            commands::install_update,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

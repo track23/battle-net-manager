@@ -1,4 +1,15 @@
 use crate::battle_net::BattleNetCore;
+use serde::Serialize;
+use tauri_plugin_updater::UpdaterExt;
+
+// ─── Update info struct ──────────────────────────────────────────────
+
+#[derive(Serialize)]
+pub struct UpdateInfo {
+    pub version: String,
+    pub notes: Option<String>,
+    pub date: Option<String>,
+}
 
 // ─── Account & Group commands ──────────────────────────────────────────
 
@@ -124,4 +135,45 @@ pub fn show_window(window: tauri::Window) {
     let _ = window.show();
     let _ = window.unminimize();
     let _ = window.set_focus();
+}
+
+// ─── Updater commands ────────────────────────────────────────────────
+
+#[tauri::command]
+pub async fn check_update(app: tauri::AppHandle) -> Result<Option<UpdateInfo>, String> {
+    let updater = app.updater().map_err(|e| e.to_string())?;
+    let update = updater.check().await.map_err(|e| e.to_string())?;
+
+    match update {
+        Some(update) => Ok(Some(UpdateInfo {
+            version: update.version.clone(),
+            notes: update.body.clone(),
+            date: update.date.map(|d| d.to_string()),
+        })),
+        None => Ok(None),
+    }
+}
+
+#[tauri::command]
+pub async fn install_update(app: tauri::AppHandle) -> Result<(), String> {
+    let updater = app.updater().map_err(|e| e.to_string())?;
+    let update = updater.check().await.map_err(|e| e.to_string())?;
+
+    if let Some(update) = update {
+        update
+            .download_and_install(
+                |chunk_length, content_length| {
+                    // Progress callback - could emit events here
+                    println!("downloaded {} of {:?}", chunk_length, content_length);
+                },
+                || {
+                    // Download finished callback
+                    println!("download finished");
+                },
+            )
+            .await
+            .map_err(|e| e.to_string())?;
+    }
+
+    Ok(())
 }

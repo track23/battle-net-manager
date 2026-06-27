@@ -12,3 +12,9 @@ export interface Group {
   Name: string;
   CreatedAt: string;
 }
+
+export interface UpdateInfo {
+  version: string;
+  notes: string | null;
+  date: string | null;
+}
