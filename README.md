@@ -6,6 +6,10 @@
 
 站在巨人的肩膀上 — 此项目参考了 [KManager](https://github.com/kingkideng/KManager)
 
+## 下载
+
+前往 [Releases](https://github.com/track23/battle-net-manager/releases/latest) 页面下载最新版本安装包。
+
 ## 简介
 
 BattleNetManager 是一款轻量级的 Windows 桌面应用，帮助拥有多个**暴雪战网（国服）**账号的玩家快速切换账号。无需反复输入账号密码，一键即可在不同账号之间无缝切换。
