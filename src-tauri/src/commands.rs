@@ -61,20 +61,30 @@ pub fn update_account_info(
     core.update_account_info(&account_id, &remark, &battle_tag, &tags)
 }
 
+/// Save current Battle.net config as a new account.
+/// Returns true on success. Internally performs async session state capture.
 #[tauri::command(rename_all = "camelCase")]
-pub fn save_current_account_to_group(
+pub async fn save_current_account_to_group(
     remark: String,
     battle_tag: String,
     group_id: String,
     tags: Vec<String>,
     core: tauri::State<'_, BattleNetCore>,
-) -> bool {
-    core.save_current_account_to_group(&remark, &battle_tag, &group_id, &tags)
+) -> Result<bool, String> {
+    Ok(core
+        .save_current_account_to_group(&remark, &battle_tag, &group_id, &tags)
+        .await
+        .success)
 }
 
+/// Switch to a saved account with region-aware session state management.
+/// Returns true on success. Frontend ignores the return value (Promise<void>).
 #[tauri::command]
-pub fn switch_account(id: String, core: tauri::State<'_, BattleNetCore>) -> bool {
-    core.switch_account(&id)
+pub async fn switch_account(
+    id: String,
+    core: tauri::State<'_, BattleNetCore>,
+) -> Result<bool, String> {
+    Ok(core.switch_account(&id).await.success)
 }
 
 #[tauri::command]
@@ -82,14 +92,26 @@ pub fn delete_account(id: String, core: tauri::State<'_, BattleNetCore>) -> bool
     core.delete_account(&id)
 }
 
+/// Add a new account with region awareness (defaults to CN).
+/// Gracefully closes Battle.net, clears caches, and relaunches.
 #[tauri::command]
-pub fn add_new_account(core: tauri::State<'_, BattleNetCore>) {
-    core.add_new_account();
+pub async fn add_new_account(core: tauri::State<'_, BattleNetCore>) -> Result<(), String> {
+    core.add_new_account().await;
+    Ok(())
 }
 
 #[tauri::command]
 pub fn get_active_account_id(core: tauri::State<'_, BattleNetCore>) -> Option<String> {
     core.get_active_account_id()
+}
+
+/// Refresh session state for an existing account.
+#[tauri::command]
+pub async fn refresh_account_session_state(
+    id: String,
+    core: tauri::State<'_, BattleNetCore>,
+) -> Result<bool, String> {
+    Ok(core.refresh_account_session_state(&id).await)
 }
 
 // ─── External URL ─────────────────────────────────────────────────────
@@ -163,11 +185,9 @@ pub async fn install_update(app: tauri::AppHandle) -> Result<(), String> {
         update
             .download_and_install(
                 |chunk_length, content_length| {
-                    // Progress callback - could emit events here
                     println!("downloaded {} of {:?}", chunk_length, content_length);
                 },
                 || {
-                    // Download finished callback
                     println!("download finished");
                 },
             )

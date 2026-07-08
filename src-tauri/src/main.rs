@@ -80,6 +80,7 @@ fn main() {
             commands::delete_account,
             commands::add_new_account,
             commands::get_active_account_id,
+            commands::refresh_account_session_state,
             commands::open_external_url,
             commands::drag_window,
             commands::minimize_app,
