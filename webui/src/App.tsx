@@ -26,8 +26,12 @@ const App: Component = () => {
   const [accounts, setAccounts] = createSignal<Account[]>([])
   const [groups, setGroups] = createSignal<Group[]>([])
   const [loading, setLoading] = createSignal(true)
-  const [activeAccountId, setActiveAccountId] = createSignal<string | null>(null)
-  const [switchingAccountId, setSwitchingAccountId] = createSignal<string | null>(null)
+  const [activeAccountId, setActiveAccountId] = createSignal<string | null>(
+    null,
+  )
+  const [switchingAccountId, setSwitchingAccountId] = createSignal<
+    string | null
+  >(null)
 
   // ── UI state ──
   const [isDarkMode, setIsDarkMode] = createSignal(false)
@@ -246,9 +250,7 @@ const App: Component = () => {
       if (ok) {
         setGroups((prev) => prev.filter((g) => g.Id !== id))
         setAccounts((prev) =>
-          prev.map((a) =>
-            a.GroupId === id ? { ...a, GroupId: '' } : a,
-          ),
+          prev.map((a) => (a.GroupId === id ? { ...a, GroupId: '' } : a)),
         )
         if (selectedGroupId() === id) setSelectedGroupId(null)
       }
@@ -299,7 +301,13 @@ const App: Component = () => {
           setAccounts((prev) =>
             prev.map((a) =>
               a.Id === editing.Id
-                ? { ...a, Remark: remark, Username: battleTag, Tags: tags, GroupId: groupId }
+                ? {
+                    ...a,
+                    Remark: remark,
+                    Username: battleTag,
+                    Tags: tags,
+                    GroupId: groupId,
+                  }
                 : a,
             ),
           )
@@ -346,10 +354,10 @@ const App: Component = () => {
           a.Id === id ? { ...a, LastUsed: toLocalISOString(new Date()) } : a,
         ),
       )
-      // Mark this account as active
-      setActiveAccountId(id)
       // Keep loading state for 2s so Battle.net has time to start
-      await new Promise((r) => setTimeout(r, 2000))
+      await new Promise((r) => setTimeout(r, 4000))
+      // Mark this account as active (after the delay, so loading spinner is visible)
+      setActiveAccountId(id)
     } catch (e) {
       console.error('Failed to switch account:', e)
     } finally {
