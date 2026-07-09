@@ -103,6 +103,10 @@ export const AccountModal: Component<AccountModalProps> = (props) => {
   async function handleSubmit(e: Event) {
     e.preventDefault()
     setError('')
+    if (!battleTag().trim()) {
+      setError('请填写战网ID')
+      return
+    }
     setSaving(true)
     try {
       const finalRemark = remark().trim()
@@ -239,7 +243,7 @@ export const AccountModal: Component<AccountModalProps> = (props) => {
             {/* Battle.net ID */}
             <div>
               <label class='mb-1.5 block text-sm font-medium text-gray-700 dark:text-dark-text'>
-                战网ID <span class='text-xs text-gray-400'>(选填)</span>
+                战网ID <span class='text-xs text-red-400'>*</span>
               </label>
               <input
                 type='text'
