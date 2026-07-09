@@ -16,6 +16,10 @@ Two-part hybrid application where a SolidJS frontend runs inside a Tauri 2.0 she
 
 User data lives at `%LOCALAPPDATA%\BattleNetManager\Data` (e.g. `accounts.json`, `groups.json`, per-account `Battle.net.config` files). The Battle.net client config is read from `%APPDATA%\Battle.net\Battle.net.config`.
 
+## Region System
+
+Accounts are tagged with a region: `cn`, `asia`, `americas`, `europe`, or empty (unset). The region is inferred from the saved `Battle.net.config` by scanning for fields like `AllowedRegions`, `LastLoginRegion`, and `WebRegion`. Cross-region switches (e.g. CN→Asia) trigger different session state handling than same-region switches. Default region for new accounts is `asia`.
+
 ## Build Commands
 
 ### Frontend (webui)
@@ -36,7 +40,7 @@ cargo tauri dev    # run with frontend dev server (hot reload)
 cargo tauri build  # production build with installer
 ```
 
-The `beforeDevCommand` and `beforeBuildCommand` in `tauri.conf.json` automatically build the SolidJS frontend.
+The `beforeDevCommand` and `beforeBuildCommand` in `tauri.conf.json` automatically build the SolidJS frontend. Build output is at `src-tauri/target/release/bundle/`.
 
 ## Development Workflow
 
@@ -52,6 +56,7 @@ Full-stack development: run `cargo tauri dev` in `src-tauri/`. This starts the V
 - **Borderless window**: Custom title bar with drag region, custom minimize/close buttons. Window dragging uses Tauri's `window.start_dragging()`.
 - **Close-to-tray**: Window hides on close, stays in system tray. Tray double-click or context menu to show/exit.
 - **JSON string bridge**: Rust commands return JSON strings (not typed objects) to match the original C# bridge behavior. Frontend parses with `JSON.parse()`.
+- **JSON field naming**: Rust models use PascalCase serde renames (e.g. `#[serde(rename = "Id")]`) matching the legacy C# data format. Tauri commands use `rename_all = "camelCase"` for JS-friendly parameter names.
 - **SolidJS reactivity**: Uses `createSignal`, `createMemo`, `createEffect`, and `onMount` for state management. Components receive props and callbacks; no global state store.
 - **Path alias**: Vite config maps `~` to `/src` (e.g., `import { x } from "~/lib/utils"`).
 - **Fixed dev port**: Vite dev server runs on port `1420` (configured in both `vite.config.ts` and `tauri.conf.json` `devUrl`). Must match for Tauri dev to work.

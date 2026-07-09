@@ -27,6 +27,7 @@ const App: Component = () => {
   const [groups, setGroups] = createSignal<Group[]>([])
   const [loading, setLoading] = createSignal(true)
   const [activeAccountId, setActiveAccountId] = createSignal<string | null>(null)
+  const [switchingAccountId, setSwitchingAccountId] = createSignal<string | null>(null)
 
   // ── UI state ──
   const [isDarkMode, setIsDarkMode] = createSignal(false)
@@ -335,6 +336,7 @@ const App: Component = () => {
   }
 
   async function switchAccount(id: string) {
+    setSwitchingAccountId(id)
     try {
       const bridge = getBridge()
       await bridge.SwitchAccount(id)
@@ -346,8 +348,12 @@ const App: Component = () => {
       )
       // Mark this account as active
       setActiveAccountId(id)
+      // Keep loading state for 2s so Battle.net has time to start
+      await new Promise((r) => setTimeout(r, 2000))
     } catch (e) {
       console.error('Failed to switch account:', e)
+    } finally {
+      setSwitchingAccountId(null)
     }
   }
 
@@ -439,6 +445,7 @@ const App: Component = () => {
             accounts={filteredAccounts()}
             groups={groups()}
             activeAccountId={activeAccountId()}
+            switchingAccountId={switchingAccountId()}
             onSwitch={switchAccount}
             onEdit={openEditModal}
             onDelete={deleteAccount}

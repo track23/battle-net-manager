@@ -7,6 +7,7 @@ interface AccountGridProps {
   accounts: Account[];
   groups: Group[];
   activeAccountId: string | null;
+  switchingAccountId: string | null;
   onSwitch: (id: string) => void;
   onEdit: (account: Account) => void;
   onDelete: (id: string) => void;
@@ -42,6 +43,7 @@ export const AccountGrid: Component<AccountGridProps> = (props) => {
                 account={account}
                 groups={props.groups}
                 isActive={props.activeAccountId === account.Id}
+                isSwitching={props.switchingAccountId === account.Id}
                 onSwitch={props.onSwitch}
                 onEdit={props.onEdit}
                 onDelete={props.onDelete}

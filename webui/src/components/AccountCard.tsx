@@ -16,6 +16,7 @@ import {
   FolderInput,
   RefreshCw,
   Zap,
+  Loader2,
 } from 'lucide-solid'
 import { cn, DEFAULT_GROUP_ID } from '../lib/utils'
 
@@ -23,6 +24,7 @@ interface AccountCardProps {
   account: Account
   groups: Group[]
   isActive: boolean
+  isSwitching: boolean
   onSwitch: (id: string) => void
   onEdit: (account: Account) => void
   onDelete: (id: string) => void
@@ -229,14 +231,25 @@ export const AccountCard: Component<AccountCardProps> = (props) => {
           fallback={
             <button
               onClick={() => props.onSwitch(props.account.Id)}
+              disabled={props.isSwitching}
               class={cn(
                 'flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all',
                 'border border-primary text-primary hover:bg-primary hover:text-white',
                 'active:scale-[0.98]',
+                'disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-transparent disabled:hover:text-primary',
               )}
             >
-              <RefreshCw size={14} />
-              使用此账号
+              {props.isSwitching ? (
+                <>
+                  <Loader2 size={14} class='animate-spin' />
+                  切换中...
+                </>
+              ) : (
+                <>
+                  <RefreshCw size={14} />
+                  使用此账号
+                </>
+              )}
             </button>
           }
         >
