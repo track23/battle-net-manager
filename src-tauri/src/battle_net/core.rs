@@ -4,7 +4,10 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use super::config;
-use super::models::{AccountInfo, GroupInfo, SaveAccountResult, SwitchAccountResult};
+use super::models::{
+    AccountInfo, GroupInfo, LegacyMigrationDataDirectory, LegacyMigrationState,
+    SaveAccountResult, SwitchAccountResult,
+};
 use super::process;
 use super::region::{
     infer_region_from_config, is_cross_region_switch, is_tagged_region,
@@ -20,6 +23,7 @@ pub struct BattleNetCore {
     accounts_json_path: PathBuf,
     groups_json_path: PathBuf,
     config_file_path: PathBuf,
+    migration_state_path: PathBuf,
 }
 
 impl BattleNetCore {
@@ -38,12 +42,14 @@ impl BattleNetCore {
         let config_file_path = app_data_path.join("Battle.net.config");
         let accounts_json_path = data_dir.join("accounts.json");
         let groups_json_path = data_dir.join("groups.json");
+        let migration_state_path = data_dir.join("migration-state.json");
 
         let core = Self {
             data_dir,
             accounts_json_path,
             groups_json_path,
             config_file_path,
+            migration_state_path,
         };
 
         let _ = fs::create_dir_all(&core.data_dir);
@@ -797,8 +803,33 @@ impl BattleNetCore {
         let _ = fs::create_dir_all(&self.data_dir);
 
         let legacy_dirs = self.get_legacy_data_directories();
+        if legacy_dirs.is_empty() {
+            return;
+        }
+
+        let mut state = self.read_migration_state();
+        let mut state_changed = false;
+
         for legacy_dir in legacy_dirs {
+            // Skip if already migrated
+            if self.has_migrated_data_directory(&state, &legacy_dir) {
+                continue;
+            }
+
+            // Skip if data was already imported (fast path: avoid redundant I/O)
+            if self.looks_like_data_directory_already_imported(&legacy_dir) {
+                self.remember_migrated_data_directory(&mut state, &legacy_dir);
+                state_changed = true;
+                continue;
+            }
+
             self.merge_legacy_data(&legacy_dir);
+            self.remember_migrated_data_directory(&mut state, &legacy_dir);
+            state_changed = true;
+        }
+
+        if state_changed {
+            self.save_migration_state(&state);
         }
     }
 
@@ -967,6 +998,133 @@ impl BattleNetCore {
             })
             .unwrap_or_default()
     }
+
+    // ─── Migration state persistence ──────────────────────────────────
+
+    fn read_migration_state(&self) -> LegacyMigrationState {
+        if !self.migration_state_path.exists() {
+            return LegacyMigrationState {
+                data_directories: Vec::new(),
+            };
+        }
+        fs::read_to_string(&self.migration_state_path)
+            .ok()
+            .and_then(|json| serde_json::from_str(&json).ok())
+            .unwrap_or_else(|| LegacyMigrationState {
+                data_directories: Vec::new(),
+            })
+    }
+
+    fn save_migration_state(&self, state: &LegacyMigrationState) {
+        let _ = serde_json::to_string(state)
+            .and_then(|json| {
+                fs::write(&self.migration_state_path, json).map_err(serde_json::Error::io)
+            });
+    }
+
+    fn has_migrated_data_directory(
+        &self,
+        state: &LegacyMigrationState,
+        legacy_dir: &std::path::Path,
+    ) -> bool {
+        let normalized = normalize_path(legacy_dir);
+        state.data_directories.iter().any(|item| {
+            item.path.eq_ignore_ascii_case(&normalized)
+        })
+    }
+
+    fn remember_migrated_data_directory(
+        &self,
+        state: &mut LegacyMigrationState,
+        legacy_dir: &std::path::Path,
+    ) {
+        let normalized = normalize_path(legacy_dir);
+        if let Some(existing) = state
+            .data_directories
+            .iter_mut()
+            .find(|item| item.path.eq_ignore_ascii_case(&normalized))
+        {
+            existing.imported_at_utc = chrono::Utc::now();
+        } else {
+            state.data_directories.push(LegacyMigrationDataDirectory {
+                path: normalized,
+                prefer_legacy_data: false,
+                imported_at_utc: chrono::Utc::now(),
+            });
+        }
+    }
+
+    fn looks_like_data_directory_already_imported(&self, legacy_dir: &std::path::Path) -> bool {
+        let legacy_accounts_path = legacy_dir.join("accounts.json");
+        if !legacy_accounts_path.exists() || !self.accounts_json_path.exists() {
+            return false;
+        }
+
+        let legacy_account_ids = self.get_importable_account_ids(legacy_dir);
+        if legacy_account_ids.is_empty() {
+            return false;
+        }
+
+        let current_account_ids: HashSet<String> = self
+            .read_accounts_from_file(&self.accounts_json_path)
+            .iter()
+            .map(|a| a.id.to_lowercase())
+            .collect();
+
+        if !legacy_account_ids
+            .iter()
+            .all(|id| current_account_ids.contains(&id.to_lowercase()))
+        {
+            return false;
+        }
+
+        // Check that current data is at least as new as legacy data
+        let current_mtime = fs::metadata(&self.accounts_json_path)
+            .and_then(|m| m.modified())
+            .ok();
+        let legacy_mtime = fs::metadata(&legacy_accounts_path)
+            .and_then(|m| m.modified())
+            .ok();
+
+        if let (Some(current), Some(legacy)) = (current_mtime, legacy_mtime) {
+            if current < legacy {
+                return false;
+            }
+        } else {
+            return false;
+        }
+
+        // Check that all account directories exist in current data
+        legacy_account_ids.iter().all(|id| {
+            self.data_dir.join(id).exists()
+                && self.data_dir.join(id).join("Battle.net.config").exists()
+        })
+    }
+
+    fn get_importable_account_ids(&self, legacy_dir: &std::path::Path) -> HashSet<String> {
+        let mut ids: HashSet<String> = self
+            .read_accounts_from_file(&legacy_dir.join("accounts.json"))
+            .iter()
+            .filter(|a| !a.id.is_empty())
+            .map(|a| a.id.to_lowercase())
+            .collect();
+
+        if let Ok(entries) = fs::read_dir(legacy_dir) {
+            for entry in entries.filter_map(|e| e.ok()) {
+                let path = entry.path();
+                if !path.is_dir() {
+                    continue;
+                }
+                if let Some(name) = path.file_name().map(|n| n.to_string_lossy().to_string()) {
+                    if !name.is_empty() && path.join("Battle.net.config").exists() {
+                        ids.insert(name.to_lowercase());
+                    }
+                }
+            }
+        }
+
+        ids
+    }
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────
@@ -1050,4 +1208,11 @@ fn try_delete_dir(path: &std::path::Path) -> Option<()> {
         fs::remove_dir_all(path).ok()?;
     }
     Some(())
+}
+
+fn normalize_path(path: &std::path::Path) -> String {
+    dunce::canonicalize(path)
+        .unwrap_or_else(|_| path.to_path_buf())
+        .to_string_lossy()
+        .to_string()
 }

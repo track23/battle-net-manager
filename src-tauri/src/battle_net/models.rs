@@ -92,3 +92,21 @@ pub struct SessionStateMetadata {
     #[serde(rename = "CapturedAtUtc")]
     pub captured_at_utc: DateTime<chrono::Utc>,
 }
+
+// ─── Legacy migration state ────────────────────────────────────────────
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LegacyMigrationState {
+    #[serde(rename = "DataDirectories", default)]
+    pub data_directories: Vec<LegacyMigrationDataDirectory>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LegacyMigrationDataDirectory {
+    #[serde(rename = "Path")]
+    pub path: String,
+    #[serde(rename = "PreferLegacyData")]
+    pub prefer_legacy_data: bool,
+    #[serde(rename = "ImportedAtUtc")]
+    pub imported_at_utc: DateTime<chrono::Utc>,
+}
