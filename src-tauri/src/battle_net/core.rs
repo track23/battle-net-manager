@@ -383,7 +383,6 @@ impl BattleNetCore {
         } else {
             let active_account = accounts
                 .iter()
-                .filter(|a| a.id != id)
                 .max_by_key(|a| a.last_used)
                 .cloned();
 
@@ -400,33 +399,30 @@ impl BattleNetCore {
         };
 
         // Phase 1: Close Battle.net if needed
-        if should_use_full_reset {
-            // Full reset path: graceful close, then clear caches and auth state.
-            // Used for cross-region switches or accounts with saved session state.
-            if !self.prepare_session_capture().await {
-                return SwitchAccountResult {
-                    success: false,
-                    requires_manual_launch: false,
-                    error: "client_exit_timeout".to_string(),
-                };
+        if should_use_full_reset || should_refresh_leaving {
+            // Gracefully close first (both paths need the client stopped).
+            let capture_ok = self.prepare_session_capture().await;
+
+            if should_refresh_leaving {
+                if let Some(ref active) = active_account {
+                    self.try_refresh_leaving_account(active, &active_region);
+                }
             }
 
-            self.clear_region_caches();
-            super::registry::clear_auth_state();
-        } else if should_refresh_leaving {
-            // Same-region refresh: save leaving account's config while client is
-            // still running, then FORCE-kill (not graceful close). A graceful
-            // WM_CLOSE lets the client clear its auth registry tokens on exit;
-            // for old accounts without saved session state this means the switch
-            // target has no auth data and must re-login. Force-killing preserves
-            // the tokens so the new config picks up the existing session.
-            if let Some(ref active) = active_account {
-                self.try_refresh_leaving_account(active, &active_region);
+            if should_use_full_reset {
+                if !capture_ok {
+                    return SwitchAccountResult {
+                        success: false,
+                        requires_manual_launch: false,
+                        error: "client_exit_timeout".to_string(),
+                    };
+                }
+                self.clear_region_caches();
+                super::registry::clear_auth_state();
             }
-            process::kill_battle_net().await;
         } else {
-            // Fast path: just kill and wait
-            self.switch_fast_path(id).await;
+            // Fast path: just kill and wait (no session state management).
+            self.switch_fast_path().await;
         }
 
         // Phase 2: Restore config
@@ -623,16 +619,8 @@ impl BattleNetCore {
 
     /// Fast path: kill and wait (no session state management, no launch).
     /// The caller is responsible for copying config and launching Battle.net.
-    async fn switch_fast_path(&self, id: &str) {
+    async fn switch_fast_path(&self) {
         process::kill_battle_net().await;
-
-        // Update last_used
-        let groups = self.read_groups();
-        let mut accounts = self.get_accounts_with_groups(&groups);
-        if let Some(acc) = accounts.iter_mut().find(|a| a.id == id) {
-            acc.last_used = chrono::Local::now();
-        }
-        self.save_accounts_with_groups(&accounts, &groups);
     }
 
     /// Get the currently active Battle.net region by checking the live config.
