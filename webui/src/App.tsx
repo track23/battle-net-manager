@@ -15,6 +15,7 @@ import {
   compareByLastUsed,
   toLocalISOString,
 } from './lib/utils'
+import { I18nProvider, useI18n } from './i18n'
 import { Sidebar } from './components/Sidebar'
 import { Header } from './components/Header'
 import { AccountGrid } from './components/AccountGrid'
@@ -22,6 +23,15 @@ import { AccountModal } from './components/AccountModal'
 import { UpdateModal } from './components/UpdateModal'
 
 const App: Component = () => {
+  return (
+    <I18nProvider>
+      <AppContent />
+    </I18nProvider>
+  )
+}
+
+const AppContent: Component = () => {
+  const { t } = useI18n()
   // ── Core data ──
   const [accounts, setAccounts] = createSignal<Account[]>([])
   const [groups, setGroups] = createSignal<Group[]>([])
@@ -313,7 +323,7 @@ const App: Component = () => {
           )
           return null
         }
-        return '保存失败，请重试'
+        return t('saveFailed')
       } else {
         // Add mode - save current account
         const ok = await bridge.SaveCurrentAccountToGroup(
@@ -326,11 +336,11 @@ const App: Component = () => {
           await loadData()
           return null
         }
-        return '保存失败，请确认您已在战网客户端完成登录'
+        return t('saveFailedLogin')
       }
     } catch (e) {
       console.error('Failed to save account:', e)
-      return '保存失败，请重试'
+      return t('saveFailed')
     }
   }
 
@@ -412,7 +422,7 @@ const App: Component = () => {
           <div class='flex flex-col items-center gap-3'>
             <div class='h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent' />
             <span class='text-sm text-gray-500 dark:text-dark-text-secondary'>
-              加载中...
+              {t('loading')}
             </span>
           </div>
         </div>

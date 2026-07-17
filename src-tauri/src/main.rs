@@ -19,9 +19,20 @@ fn main() {
             let window = app.get_webview_window("main").unwrap();
             window.eval("document.addEventListener('contextmenu', e => e.preventDefault())").unwrap();
 
+            // Detect system locale for tray text
+            let locale = sys_locale::get_locale().unwrap_or_default();
+            let is_zh = locale.starts_with("zh");
+            let show_text = if is_zh { "主界面" } else { "Main Window" };
+            let exit_text = if is_zh { "退出" } else { "Exit" };
+            let tooltip_text = if is_zh { "战网账号切换" } else { "BattleNetManager" };
+
+            // Set window title based on locale
+            let window_title = if is_zh { "战网账号切换" } else { "BattleNetManager" };
+            window.set_title(window_title)?;
+
             // Build system tray context menu
-            let show_item = MenuItemBuilder::with_id("show", "主界面").build(app)?;
-            let exit_item = MenuItemBuilder::with_id("exit", "退出").build(app)?;
+            let show_item = MenuItemBuilder::with_id("show", show_text).build(app)?;
+            let exit_item = MenuItemBuilder::with_id("exit", exit_text).build(app)?;
             let menu = MenuBuilder::new(app)
                 .item(&show_item)
                 .separator()
@@ -31,7 +42,7 @@ fn main() {
             // Build tray icon
             let _tray = TrayIconBuilder::new()
                 .icon(app.default_window_icon().unwrap().clone())
-                .tooltip("战网账号切换")
+                .tooltip(tooltip_text)
                 .menu(&menu)
                 .on_menu_event(|app, event| match event.id().as_ref() {
                     "show" => {

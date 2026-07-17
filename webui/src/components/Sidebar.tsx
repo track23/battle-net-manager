@@ -21,6 +21,7 @@ import {
 } from 'lucide-solid'
 import { DEFAULT_GROUP_ID } from '../lib/utils'
 import { cn } from '../lib/utils'
+import { useI18n } from '../i18n'
 
 interface SidebarProps {
   groups: Group[]
@@ -42,6 +43,7 @@ interface SidebarProps {
 }
 
 export const Sidebar: Component<SidebarProps> = (props) => {
+  const { t } = useI18n()
   const [newGroupName, setNewGroupName] = createSignal('')
   const [showNewGroupInput, setShowNewGroupInput] = createSignal(false)
   const [editingGroupId, setEditingGroupId] = createSignal<string | null>(null)
@@ -86,7 +88,7 @@ export const Sidebar: Component<SidebarProps> = (props) => {
 
   function handleDeleteGroup(id: string) {
     setContextMenuId(null)
-    if (confirm('确定要删除该分组吗？账号将移至未分组。')) {
+    if (confirm(t('deleteGroupConfirm'))) {
       props.onDeleteGroup(id)
     }
   }
@@ -122,7 +124,7 @@ export const Sidebar: Component<SidebarProps> = (props) => {
             )}
           >
             <Users size={18} />
-            <span class='flex-1 text-left'>全部账号</span>
+            <span class='flex-1 text-left'>{t('allAccounts')}</span>
             <span class='text-xs text-gray-400 dark:text-dark-text-secondary'>
               {totalAccounts()}
             </span>
@@ -132,7 +134,7 @@ export const Sidebar: Component<SidebarProps> = (props) => {
           <div class='mt-4'>
             <div class='flex items-center justify-between px-3 py-1'>
               <span class='text-xs font-medium text-gray-400 uppercase dark:text-dark-text-secondary'>
-                分组
+                {t('groups')}
               </span>
               <button
                 onClick={() => setShowNewGroupInput(true)}
@@ -163,7 +165,7 @@ export const Sidebar: Component<SidebarProps> = (props) => {
                     if (e.key === 'Enter') handleCreateGroup()
                     if (e.key === 'Escape') setShowNewGroupInput(false)
                   }}
-                  placeholder='新分组名称'
+                  placeholder={t('newGroupName')}
                   class='flex-1 rounded-md border border-gray-100 px-2 py-1 text-xs bg-white dark:bg-dark-card-bg dark:border-dark-card-border dark:text-dark-text'
                   ref={(el) => queueMicrotask(() => el.focus())}
                 />
@@ -238,13 +240,13 @@ export const Sidebar: Component<SidebarProps> = (props) => {
                         onClick={() => startEditGroup(group.Id, group.Name)}
                         class='flex w-full items-center gap-2 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 dark:text-dark-text-secondary dark:hover:bg-dark-sidebar-border'
                       >
-                        <Settings size={12} /> 重命名
+                        <Settings size={12} /> {t('rename')}
                       </button>
                       <button
                         onClick={() => handleDeleteGroup(group.Id)}
                         class='flex w-full items-center gap-2 px-3 py-1.5 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
                       >
-                        删除分组
+                        {t('deleteGroup')}
                       </button>
                     </div>
                   </Show>
@@ -258,7 +260,7 @@ export const Sidebar: Component<SidebarProps> = (props) => {
             <div class='mt-4'>
               <div class='px-3 py-1'>
                 <span class='text-xs font-medium text-gray-400 uppercase dark:text-dark-text-secondary'>
-                  标签
+                  {t('tags')}
                 </span>
               </div>
               <For each={props.allTags}>
@@ -292,7 +294,7 @@ export const Sidebar: Component<SidebarProps> = (props) => {
             <Show when={props.isDarkMode} fallback={<Sun size={18} />}>
               <Moon size={18} />
             </Show>
-            <span>{props.isDarkMode ? '浅色模式' : '深色模式'}</span>
+            <span>{props.isDarkMode ? t('lightMode') : t('darkMode')}</span>
           </button>
         </div>
       </aside>

@@ -2,6 +2,7 @@ import { For, Show, type Component } from "solid-js";
 import type { Account, Group } from "../types";
 import { AccountCard } from "./AccountCard";
 import { Sparkles } from "lucide-solid";
+import { useI18n } from '../i18n'
 
 interface AccountGridProps {
   accounts: Account[];
@@ -15,6 +16,7 @@ interface AccountGridProps {
 }
 
 export const AccountGrid: Component<AccountGridProps> = (props) => {
+  const { t } = useI18n()
   return (
     <div class="flex-1 overflow-y-auto p-6 hide-scrollbar">
       <Show
@@ -28,10 +30,10 @@ export const AccountGrid: Component<AccountGridProps> = (props) => {
               />
             </div>
             <p class="text-sm font-medium text-gray-500 dark:text-dark-text-secondary">
-              暂无账号
+              {t('noAccounts')}
             </p>
             <p class="mt-1 text-xs text-gray-400 dark:text-dark-text-secondary">
-              点击右上角"添加账号"开始管理
+              {t('noAccountsHint')}
             </p>
           </div>
         }

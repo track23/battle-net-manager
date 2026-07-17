@@ -2,6 +2,7 @@ import { createSignal, Show, type Component } from 'solid-js'
 import type { UpdateInfo } from '../types'
 import { X, Download, CheckCircle, AlertCircle } from 'lucide-solid'
 import { cn } from '../lib/utils'
+import { useI18n } from '../i18n'
 
 interface UpdateModalProps {
   updateInfo: UpdateInfo
@@ -10,6 +11,7 @@ interface UpdateModalProps {
 }
 
 export const UpdateModal: Component<UpdateModalProps> = (props) => {
+  const { t } = useI18n()
   const [installing, setInstalling] = createSignal(false)
   const [error, setError] = createSignal('')
   const [success, setSuccess] = createSignal(false)
@@ -21,7 +23,7 @@ export const UpdateModal: Component<UpdateModalProps> = (props) => {
       await props.onInstall()
       setSuccess(true)
     } catch (e) {
-      setError('安装失败，请重试或手动下载更新')
+      setError(t('installFailed'))
       console.error('Failed to install update:', e)
     } finally {
       setInstalling(false)
@@ -50,10 +52,10 @@ export const UpdateModal: Component<UpdateModalProps> = (props) => {
         <div class='mb-6 flex items-center justify-between'>
           <div>
             <h2 class='text-lg font-semibold text-gray-900 dark:text-dark-text'>
-              发现新版本
+              {t('newVersion')}
             </h2>
             <p class='mt-0.5 text-xs text-gray-400 dark:text-dark-text-secondary'>
-              有新的更新可用
+              {t('updateAvailable')}
             </p>
           </div>
           <button
@@ -75,11 +77,11 @@ export const UpdateModal: Component<UpdateModalProps> = (props) => {
             />
             <div>
               <div class='text-sm font-medium text-emerald-800 dark:text-emerald-200'>
-                新版本: v{props.updateInfo.version}
+                {t('newVersionLabel')}: v{props.updateInfo.version}
               </div>
               <Show when={props.updateInfo.date}>
                 <div class='text-xs text-emerald-600 dark:text-emerald-400'>
-                  发布时间: {props.updateInfo.date}
+                  {t('releaseDate')}: {props.updateInfo.date}
                 </div>
               </Show>
             </div>
@@ -89,7 +91,7 @@ export const UpdateModal: Component<UpdateModalProps> = (props) => {
           <Show when={props.updateInfo.notes}>
             <div class='rounded-lg border border-gray-100 p-3 dark:border-dark-card-border'>
               <div class='mb-2 text-sm font-medium text-gray-700 dark:text-dark-text'>
-                更新内容
+                {t('updateNotes')}
               </div>
               <div class='max-h-40 overflow-y-auto text-sm text-gray-600 dark:text-dark-text-secondary whitespace-pre-wrap'>
                 {props.updateInfo.notes}
@@ -109,7 +111,7 @@ export const UpdateModal: Component<UpdateModalProps> = (props) => {
           <Show when={success()}>
             <div class='flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'>
               <CheckCircle size={16} />
-              更新已下载，应用将自动重启完成安装
+              {t('updateDownloaded')}
             </div>
           </Show>
 
@@ -125,7 +127,7 @@ export const UpdateModal: Component<UpdateModalProps> = (props) => {
                 'disabled:opacity-50 disabled:cursor-not-allowed',
               )}
             >
-              {success() ? '关闭' : '稍后更新'}
+              {success() ? t('close') : t('updateLater')}
             </button>
             <Show when={!success()}>
               <button
@@ -145,7 +147,7 @@ export const UpdateModal: Component<UpdateModalProps> = (props) => {
                 >
                   <Download size={16} />
                 </Show>
-                {installing() ? '下载中...' : '立即更新'}
+                {installing() ? t('downloading') : t('updateNow')}
               </button>
             </Show>
           </div>

@@ -2,6 +2,7 @@ import { createSignal, createEffect, For, Show, type Component } from 'solid-js'
 import type { Account, Group } from '../types'
 import { X, ChevronDown, Sparkles, PlusCircle } from 'lucide-solid'
 import { cn, DEFAULT_GROUP_ID } from '../lib/utils'
+import { useI18n } from '../i18n'
 
 type ModalMode = 'select' | 'save' | 'edit'
 
@@ -20,6 +21,7 @@ interface AccountModalProps {
 }
 
 export const AccountModal: Component<AccountModalProps> = (props) => {
+  const { t } = useI18n()
   const [mode, setMode] = createSignal<ModalMode>('select')
   const [remark, setRemark] = createSignal('')
   const [battleTag, setBattleTag] = createSignal('')
@@ -61,7 +63,7 @@ export const AccountModal: Component<AccountModalProps> = (props) => {
 
   const selectedGroupName = () => {
     const g = props.groups.find((g) => g.Id === groupId())
-    return g?.Name || '不指定分组'
+    return g?.Name || t('noGroup')
   }
 
   function addTag(tag: string) {
@@ -104,7 +106,7 @@ export const AccountModal: Component<AccountModalProps> = (props) => {
     e.preventDefault()
     setError('')
     if (!battleTag().trim()) {
-      setError('请填写战网ID')
+      setError(t('enterBattleTag'))
       return
     }
     setSaving(true)
@@ -122,7 +124,7 @@ export const AccountModal: Component<AccountModalProps> = (props) => {
         props.onClose()
       }
     } catch {
-      setError('操作失败，请重试')
+      setError(t('operationFailed'))
     } finally {
       setSaving(false)
     }
@@ -161,17 +163,17 @@ export const AccountModal: Component<AccountModalProps> = (props) => {
           <div>
             <h2 class='text-lg font-semibold text-gray-900 dark:text-dark-text'>
               {mode() === 'select'
-                ? '选择操作'
+                ? t('selectAction')
                 : mode() === 'edit'
-                  ? '编辑账号'
-                  : '录入账号'}
+                  ? t('editAccount')
+                  : t('addAccountTitle')}
             </h2>
             <p class='mt-0.5 text-xs text-gray-400 dark:text-dark-text-secondary'>
               {mode() === 'select'
-                ? '选择您要执行的操作'
+                ? t('selectActionDesc')
                 : mode() === 'edit'
-                  ? '修改账号信息，分组可随时修改。'
-                  : '填写账号信息，分组可随时修改。'}
+                  ? t('editAccountDesc')
+                  : t('addAccountDesc')}
             </p>
           </div>
           <button
@@ -202,10 +204,10 @@ export const AccountModal: Component<AccountModalProps> = (props) => {
               </div>
               <div>
                 <div class='font-medium text-gray-900 dark:text-dark-text'>
-                  保存当前状态
+                  {t('saveCurrentState')}
                 </div>
                 <div class='mt-0.5 text-sm text-gray-500 dark:text-dark-text-secondary'>
-                  提取当前战网已登录的配置文件并永久保存
+                  {t('saveCurrentStateDesc')}
                 </div>
               </div>
             </button>
@@ -227,10 +229,10 @@ export const AccountModal: Component<AccountModalProps> = (props) => {
               </div>
               <div>
                 <div class='font-medium text-gray-900 dark:text-dark-text'>
-                  前往登录新号
+                  {t('loginNewAccount')}
                 </div>
                 <div class='mt-0.5 text-sm text-gray-500 dark:text-dark-text-secondary'>
-                  强制关闭当前战网，让你能够输入新的账密
+                  {t('loginNewAccountDesc')}
                 </div>
               </div>
             </button>
@@ -243,13 +245,13 @@ export const AccountModal: Component<AccountModalProps> = (props) => {
             {/* Battle.net ID */}
             <div>
               <label class='mb-1.5 block text-sm font-medium text-gray-700 dark:text-dark-text'>
-                战网ID <span class='text-xs text-red-400'>*</span>
+                {t('battleTag')} <span class='text-xs text-red-400'>*</span>
               </label>
               <input
                 type='text'
                 value={battleTag()}
                 onInput={(e) => setBattleTag(e.currentTarget.value)}
-                placeholder='例如: Player#1234'
+                placeholder={t('battleTagPlaceholder')}
                 class={cn(
                   'w-full rounded-lg border border-gray-100 px-3 py-2.5 text-sm outline-none transition-colors font-mono',
                   'placeholder:text-gray-400 placeholder:font-sans focus:border-primary focus:ring-1 focus:ring-primary/20',
@@ -261,7 +263,7 @@ export const AccountModal: Component<AccountModalProps> = (props) => {
             {/* Group */}
             <div>
               <label class='mb-1.5 block text-sm font-medium text-gray-700 dark:text-dark-text'>
-                {mode() === 'edit' ? '所属分组' : '保存到分组'}
+                {mode() === 'edit' ? t('belongsToGroup') : t('saveToGroup')}
               </label>
               <div class='relative'>
                 <button
@@ -297,7 +299,7 @@ export const AccountModal: Component<AccountModalProps> = (props) => {
                           : 'text-gray-600 hover:bg-gray-50 dark:text-dark-text-secondary dark:hover:bg-dark-sidebar-border',
                       )}
                     >
-                      不指定分组
+                      {t('noGroup')}
                     </button>
                     <For each={props.groups.filter((g) => g.Id !== DEFAULT_GROUP_ID)}>
                       {(g) => (
@@ -326,8 +328,8 @@ export const AccountModal: Component<AccountModalProps> = (props) => {
             {/* Tags */}
             <div>
               <label class='mb-1.5 block text-sm font-medium text-gray-700 dark:text-dark-text'>
-                标签{' '}
-                <span class='text-xs text-gray-400'>(选填，按 Enter 添加)</span>
+                {t('tags')}{' '}
+                <span class='text-xs text-gray-400'>{t('optionalPressEnter')}</span>
               </label>
               <div class='relative'>
                 <div
@@ -360,7 +362,7 @@ export const AccountModal: Component<AccountModalProps> = (props) => {
                     onFocus={() => setShowTagSuggestions(true)}
                     onBlur={() => setShowTagSuggestions(false)}
                     onKeyDown={handleTagKeyDown}
-                    placeholder={tags().length === 0 ? '输入标签名称' : ''}
+                    placeholder={tags().length === 0 ? t('enterTagName') : ''}
                     class='min-w-[80px] flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400 dark:text-dark-text dark:placeholder:text-dark-text-secondary'
                   />
                 </div>
@@ -390,13 +392,13 @@ export const AccountModal: Component<AccountModalProps> = (props) => {
             {/* Remark */}
             <div>
               <label class='mb-1.5 block text-sm font-medium text-gray-700 dark:text-dark-text'>
-                账号备注
+                {t('accountRemark')}
               </label>
               <input
                 type='text'
                 value={remark()}
                 onInput={(e) => setRemark(e.currentTarget.value)}
-                placeholder='例如: 未定级'
+                placeholder={t('remarkPlaceholder')}
                 class={cn(
                   'w-full rounded-lg border border-gray-100 px-3 py-2.5 text-sm outline-none transition-colors',
                   'placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary/20',
@@ -424,7 +426,7 @@ export const AccountModal: Component<AccountModalProps> = (props) => {
                     'dark:border-dark-card-border dark:text-dark-text-secondary dark:hover:bg-dark-sidebar-border',
                   )}
                 >
-                  返回
+                  {t('back')}
                 </button>
               </Show>
               <Show when={mode() === 'edit'}>
@@ -440,7 +442,7 @@ export const AccountModal: Component<AccountModalProps> = (props) => {
                     'dark:border-dark-card-border dark:text-dark-text-secondary dark:hover:bg-dark-sidebar-border',
                   )}
                 >
-                  取消
+                  {t('cancel')}
                 </button>
                 <button
                   type='submit'
@@ -452,10 +454,10 @@ export const AccountModal: Component<AccountModalProps> = (props) => {
                   )}
                 >
                   {saving()
-                    ? '保存中...'
+                    ? t('saving')
                     : mode() === 'edit'
-                      ? '保存修改'
-                      : '确定保存'}
+                      ? t('saveChanges')
+                      : t('confirmSave')}
                 </button>
               </div>
             </div>

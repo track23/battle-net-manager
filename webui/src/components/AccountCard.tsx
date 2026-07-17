@@ -19,6 +19,7 @@ import {
   Loader2,
 } from 'lucide-solid'
 import { cn, DEFAULT_GROUP_ID } from '../lib/utils'
+import { useI18n } from '../i18n'
 
 interface AccountCardProps {
   account: Account
@@ -32,6 +33,7 @@ interface AccountCardProps {
 }
 
 export const AccountCard: Component<AccountCardProps> = (props) => {
+  const { t } = useI18n()
   const [copied, setCopied] = createSignal(false)
   const [showMenu, setShowMenu] = createSignal(false)
   const [showGroupMenu, setShowGroupMenu] = createSignal(false)
@@ -67,7 +69,7 @@ export const AccountCard: Component<AccountCardProps> = (props) => {
   }
 
   function handleDelete() {
-    if (confirm('确定要删除该账号吗？')) {
+    if (confirm(t('deleteAccountConfirm'))) {
       props.onDelete(props.account.Id)
       setShowMenu(false)
     }
@@ -111,7 +113,7 @@ export const AccountCard: Component<AccountCardProps> = (props) => {
             <button
               onClick={handleCopy}
               class='no-drag flex-shrink-0 text-gray-400 hover:text-primary dark:text-dark-text-secondary dark:hover:text-primary'
-              title='复制用户名'
+              title={t('copyUsername')}
             >
               <Show when={copied()} fallback={<Copy size={13} />}>
                 <Check size={13} class='text-primary' />
@@ -139,7 +141,7 @@ export const AccountCard: Component<AccountCardProps> = (props) => {
                 }}
                 class='flex w-full items-center gap-2 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 dark:text-dark-text-secondary dark:hover:bg-dark-sidebar-border'
               >
-                <Pencil size={13} /> 编辑信息
+                <Pencil size={13} /> {t('editInfo')}
               </button>
               <Show
                 when={
@@ -153,7 +155,7 @@ export const AccountCard: Component<AccountCardProps> = (props) => {
                     onClick={() => setShowGroupMenu((p) => !p)}
                     class='flex w-full items-center gap-2 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 dark:text-dark-text-secondary dark:hover:bg-dark-sidebar-border'
                   >
-                    <FolderInput size={13} /> 移动到分组
+                    <FolderInput size={13} /> {t('moveToGroup')}
                   </button>
                   <Show when={showGroupMenu()}>
                     <div class='ml-6 mt-0.5 rounded-lg border border-gray-100 bg-white py-1 shadow-lg dark:bg-dark-card-bg dark:border-dark-card-border'>
@@ -176,7 +178,7 @@ export const AccountCard: Component<AccountCardProps> = (props) => {
                           onClick={() => handleMoveToGroup('')}
                           class='flex w-full items-center gap-2 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 dark:text-dark-text-secondary dark:hover:bg-dark-sidebar-border'
                         >
-                          取消分组
+                          {t('ungroup')}
                         </button>
                       </Show>
                     </div>
@@ -188,7 +190,7 @@ export const AccountCard: Component<AccountCardProps> = (props) => {
                 onClick={handleDelete}
                 class='flex w-full items-center gap-2 px-3 py-2 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
               >
-                <Trash2 size={13} /> 删除账号
+                <Trash2 size={13} /> {t('deleteAccount')}
               </button>
             </div>
           </Show>
@@ -242,12 +244,12 @@ export const AccountCard: Component<AccountCardProps> = (props) => {
               {props.isSwitching ? (
                 <>
                   <Loader2 size={14} class='animate-spin' />
-                  切换中...
+                  {t('switching')}
                 </>
               ) : (
                 <>
                   <RefreshCw size={14} />
-                  使用此账号
+                  {t('useThisAccount')}
                 </>
               )}
             </button>
@@ -255,7 +257,7 @@ export const AccountCard: Component<AccountCardProps> = (props) => {
         >
           <div class='flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-600 dark:bg-emerald-800/40 dark:text-emerald-300'>
             <Zap size={14} />
-            使用中
+            {t('inUse')}
           </div>
         </Show>
       </div>

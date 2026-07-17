@@ -1,5 +1,6 @@
 import { type Component } from 'solid-js'
 import { Search, Plus, Menu } from 'lucide-solid'
+import { useI18n } from '../i18n'
 
 interface HeaderProps {
   searchQuery: string
@@ -10,6 +11,7 @@ interface HeaderProps {
 }
 
 export const Header: Component<HeaderProps> = (props) => {
+  const { t } = useI18n()
   return (
     <header class='flex items-center gap-4 border-b border-gray-100 px-6 py-3 bg-white dark:bg-dark-page-bg dark:border-dark-card-border'>
       {/* Mobile menu button */}
@@ -30,7 +32,7 @@ export const Header: Component<HeaderProps> = (props) => {
           type='text'
           value={props.searchQuery}
           onInput={(e) => props.onSearch(e.currentTarget.value)}
-          placeholder='搜索账号、标签或备注...'
+          placeholder={t('searchPlaceholder')}
           class='w-full rounded-lg border border-gray-100 bg-gray-50 py-2 pl-10 pr-4 text-sm outline-none transition-colors
             placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary/20
             dark:bg-dark-sidebar-bg dark:border-dark-card-border dark:text-dark-text dark:placeholder:text-dark-text-secondary'
@@ -43,7 +45,7 @@ export const Header: Component<HeaderProps> = (props) => {
         class='no-drag flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover active:scale-[0.98]'
       >
         <Plus size={16} />
-        <span class='hidden sm:inline'>添加账号</span>
+        <span class='hidden sm:inline'>{t('addAccount')}</span>
       </button>
     </header>
   )
