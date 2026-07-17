@@ -1,6 +1,6 @@
 [package]
 name = "battle-net-manager"
-version = "0.0.1"
+version = "0.1.0"
 description = "战网账号切换"
 authors = ["bgm004"]
 edition = "2021"

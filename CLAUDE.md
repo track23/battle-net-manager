@@ -20,6 +20,10 @@ User data lives at `%LOCALAPPDATA%\BattleNetManager\Data` (e.g. `accounts.json`,
 
 Accounts are tagged with a region: `cn`, `asia`, `americas`, `europe`, or empty (unset). The region is inferred from the saved `Battle.net.config` by scanning for fields like `AllowedRegions`, `LastLoginRegion`, and `WebRegion`. Cross-region switches (e.g. CN→Asia) trigger different session state handling than same-region switches. Default region for new accounts is `asia`.
 
+## i18n
+
+The frontend uses a custom i18n system in `webui/src/i18n/`. Locale is detected from the system language via Tauri's `sys-locale` crate (passed to the frontend as a Tauri event on startup). Translations live in `webui/src/i18n/locales/`. The UI defaults to Chinese when the system locale is not English.
+
 ## Build Commands
 
 ### Frontend (webui)
