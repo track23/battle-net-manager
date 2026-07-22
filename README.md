@@ -2,7 +2,7 @@ English | [中文](README_zh.md)
 
 # BattleNetManager — Battle.net Account Switcher
 
-![Screenshot](docs/images/01.png)
+![Screenshot](docs/images/02.png)
 
 > ⚠️ This software is independently developed by a third party and is not affiliated with, endorsed by, or authorized by Blizzard Entertainment or NetEase.
 
@@ -32,12 +32,12 @@ BattleNetManager is a lightweight Windows desktop app for players who manage mul
 
 ## Tech Stack
 
-| Layer          | Technology                |
-| -------------- | ------------------------- |
-| Frontend       | SolidJS + Tailwind CSS v4 |
-| Desktop Shell  | Tauri 2.0                 |
-| Backend        | Rust                      |
-| Packaging      | NSIS (Windows Installer)  |
+| Layer         | Technology                |
+| ------------- | ------------------------- |
+| Frontend      | SolidJS + Tailwind CSS v4 |
+| Desktop Shell | Tauri 2.0                 |
+| Backend       | Rust                      |
+| Packaging     | NSIS (Windows Installer)  |
 
 ## Development
 
